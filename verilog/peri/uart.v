@@ -169,7 +169,8 @@ module uart(
     .freeze (1'b0),
     .rin (1'b1),
     .dcdn (1'b1),
-    .dsrn (1'b1)
+    .dsrn (1'b1),
+    .ctsn (1'b0)
     
     );
 endmodule
