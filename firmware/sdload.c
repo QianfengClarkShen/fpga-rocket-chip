@@ -15,7 +15,7 @@ FATFS FatFs;   // Work area (file system object) for logical drive
 // max size of file image is 16M
 #define MAX_FILE_SIZE 0x1000000
 
-// size of DDR RAM (128M for NEXYS4-DDR) 
+// size of DDR RAM (128M for NEXYS4-DDR)
 #define DDR_SIZE 0x8000000
 
 // 4K size read burst
@@ -31,7 +31,8 @@ int main (void)
   uart_init();
 
   printf("=============== FSBL ===============\n\r", 0);
-
+  printf("=============== DEMO ===============\n\r", 0);
+/*
   // Register work area to the default drive
   if(f_mount(&FatFs, "", 1)) {
     printf("Fail to mount SD driver!\n\r", 0);
@@ -75,4 +76,5 @@ int main (void)
 
   spi_disable();
   printf("=========== Jump to DDR ============\n\r", 0);
+  */
 }
