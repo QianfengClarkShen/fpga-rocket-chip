@@ -23,15 +23,7 @@ FATFS FatFs;   // Work area (file system object) for logical drive
 
 int main (void)
 {
-  FIL fil;                // File object
-  FRESULT fr;             // FatFs return code
-  uint8_t *boot_file_buf = (uint8_t *)(get_ddr_base()) + DDR_SIZE - MAX_FILE_SIZE; // at the end of DDR space
-  uint8_t *memory_base = (uint8_t *)(get_ddr_base());
-
-  uart_init();
-
-  printf("=============== FSBL ===============\n\r", 0);
-  printf("=============== DEMO ===============\n\r", 0);
+  printf("???\n\r", 0);
 /*
   // Register work area to the default drive
   if(f_mount(&FatFs, "", 1)) {

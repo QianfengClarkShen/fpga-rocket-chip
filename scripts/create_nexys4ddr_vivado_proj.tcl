@@ -71,12 +71,12 @@ set_property -dict [list \
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci]
 
 #UART
-create_ip -name axi_uart16550 -vendor xilinx.com -library ip -module_name axi_uart16550_0
-set_property -dict [list \
+#create_ip -name axi_uart16550 -vendor xilinx.com -library ip -module_name axi_uart16550_0
+#set_property -dict [list \
                         CONFIG.UART_BOARD_INTERFACE {Custom} \
                         CONFIG.C_S_AXI_ACLK_FREQ_HZ_d {50} \
                        ] [get_ips axi_uart16550_0]
-generate_target {instantiation_template} \
+#generate_target {instantiation_template} \
     [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_uart16550_0/axi_uart16550_0.xci]
 
 # Create 'constrs_1' fileset (if not found)
@@ -96,3 +96,4 @@ generate_target all [get_ips]
 
 #some tweaking of optimizations
 set_property STEPS.SYNTH_DESIGN.ARGS.KEEP_EQUIVALENT_REGISTERS true [get_runs synth_1]
+set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]

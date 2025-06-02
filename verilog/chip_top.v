@@ -2,20 +2,17 @@
 `define SIM_ENABLE_DDR
 module chip_top
 (
-  input         clock100,
-  input         buttonresetn,
-
-  //----UART
-  output        uart_TX,
-  input         uart_RX
-);
-
-  wire  clock50; //50m
+  input wire clk,
+  input wire rst,
+//uart
+    output wire [7:0] uart_axis_tdata,
+    output wire uart_axis_tvalid,
+    input wire uart_axis_tready
+ );
 
   //dut wires
   wire  dut_clock;
   wire  dut_reset;
-  wire [1:0] dut_interrupts;
 
   wire  dut_debug_ndreset;
   wire  dut_debug_dmactive;
@@ -92,17 +89,6 @@ module chip_top
   wire [1:0] mmio_io_axi4_0_r_resp;
   wire  mmio_io_axi4_0_r_last;
 
-  wire interrupt_uart;
-
-  wire  pll_locked;
-  assign reset = ~ pll_locked;
-  clk_wiz_0 clk_gen(
-    .clk_in1(clock100),//100m
-    .clk_out1(clock50),   //50m
-    .resetn(buttonresetn),
-    .locked(pll_locked) // we use pll locked signal as resetn for ddr ctrl.
-  );
-
   ExampleRocketSystem dut (
       .clock(dut_clock),
       .reset(dut_reset),
@@ -117,7 +103,7 @@ module chip_top
 
       .debug_ndreset(dut_debug_ndreset),
       .debug_dmactive(),
-      .interrupts(dut_interrupts),
+      .interrupts(2'b0),
 
       .mem_axi4_0_aw_ready(1'b1),
       .mem_axi4_0_aw_valid(),
@@ -267,26 +253,21 @@ module chip_top
     .io_axi4_0_r_resp(mmio_io_axi4_0_r_resp),
     .io_axi4_0_r_last(mmio_io_axi4_0_r_last),
 
-    //external interrupt connecting
-    .interrupt_uart(interrupt_uart),
-
     //HW devices' pins
-    .uart_TX(uart_TX),
-    .uart_RX(uart_RX)
+        .uart_axis_tdata  (uart_axis_tdata  ),
+        .uart_axis_tvalid (uart_axis_tvalid ),
+        .uart_axis_tready (uart_axis_tready )
   );
 
   //-------------------------connect all the module together---- very verbose by Chisel generated, I will change it later
 
-  assign dut_clock = clock50;
-  assign dut_reset = reset | dut_debug_ndreset;
-
-  assign dut_interrupts[0] = interrupt_uart;
-  assign dut_interrupts[1] = 1'b0;
+  assign dut_clock = clk;
+  assign dut_reset = rst | dut_debug_ndreset;
 
   //  ***** mmio module *****
   // CR inheritance
-  assign mmio_clock = clock50;
-  assign mmio_reset = reset;
+  assign mmio_clock = clk;
+  assign mmio_reset = rst;
   //  drived by outside module
   assign dut_mmio_axi4_0_aw_ready = mmio_io_axi4_0_aw_ready;
   assign dut_mmio_axi4_0_w_ready = mmio_io_axi4_0_w_ready;

@@ -36,7 +36,9 @@ $(vivado_project): $(defaultconfig_v) $(firmware_hex)
 	vivado -mode batch -source scripts/create_$(PROJ)_vivado_proj.tcl
 
 vivado: $(vivado_project)
-	vivado $< &
+#	vivado $< &
+
+core: $(defaultconfig_v)
 
 ### sd_image
 boot_elf = boot.elf

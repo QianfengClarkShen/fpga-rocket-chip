@@ -2,9 +2,6 @@
    input clock,
    input reset,
 
-   input uart_RX,
-   output uart_TX,
-
    output        io_axi4_0_aw_ready,
    input         io_axi4_0_aw_valid,
    input  [3:0]  io_axi4_0_aw_id,
@@ -34,8 +31,11 @@
    output [63:0] io_axi4_0_r_data,
    output [1:0]  io_axi4_0_r_resp,
    output        io_axi4_0_r_last,
-
-   output        interrupt_uart
+//uart
+    //uart
+    output wire [7:0] uart_axis_tdata,
+    output wire uart_axis_tvalid,
+    input wire uart_axis_tready
  );
 
    wire resetn;
@@ -73,8 +73,8 @@
    wire [2:0]      peribundle_axi4_r_last;
 
    axicb_wrapper peri_Xbar(
-       .aclk           (clock),
-       .aresetn        (resetn),
+       .clk           (clock),
+       .rst        (~resetn),
 
        .s_axi_awid     (io_axi4_0_aw_id),
        .s_axi_awaddr   (io_axi4_0_aw_addr),
@@ -147,45 +147,47 @@
        );
 
    //0x60000000 - 0x60001fff
-   uart uart_inst(
-       .uart_axi4_aw_ready (peribundle_axi4_aw_ready[0]    ),
-       .uart_axi4_aw_valid (peribundle_axi4_aw_valid[0]    ),
-       .uart_axi4_aw_id    (peribundle_axi4_aw_id[3:0]     ),
-       .uart_axi4_aw_addr  (peribundle_axi4_aw_addr[30:0]  ),
-       .uart_axi4_aw_len   (peribundle_axi4_aw_len[7:0]    ),
-       .uart_axi4_aw_size  (peribundle_axi4_aw_size[2:0]   ),
-       .uart_axi4_aw_burst (peribundle_axi4_aw_burst[1:0]  ),
-       .uart_axi4_w_ready  (peribundle_axi4_w_ready[0]     ),
-       .uart_axi4_w_valid  (peribundle_axi4_w_valid[0]     ),
-       .uart_axi4_w_data   (peribundle_axi4_w_data[63:0]   ),
-       .uart_axi4_w_strb   (peribundle_axi4_w_strb[7:0]    ),
-       .uart_axi4_w_last   (peribundle_axi4_w_last[0]      ),
-       .uart_axi4_b_ready  (peribundle_axi4_b_ready[0]     ),
-       .uart_axi4_b_valid  (peribundle_axi4_b_valid[0]     ),
-       .uart_axi4_b_id     (peribundle_axi4_b_id[3:0]      ),
-       .uart_axi4_b_resp   (peribundle_axi4_b_resp[1:0]    ),
-       .uart_axi4_ar_ready (peribundle_axi4_ar_ready[0]    ),
-       .uart_axi4_ar_valid (peribundle_axi4_ar_valid[0]    ),
-       .uart_axi4_ar_id    (peribundle_axi4_ar_id[3:0]     ),
-       .uart_axi4_ar_addr  (peribundle_axi4_ar_addr[30:0]  ),
-       .uart_axi4_ar_len   (peribundle_axi4_ar_len[7:0]    ),
-       .uart_axi4_ar_size  (peribundle_axi4_ar_size[2:0]   ),
-       .uart_axi4_ar_burst (peribundle_axi4_ar_burst[1:0]  ),
-       .uart_axi4_r_ready  (peribundle_axi4_r_ready[0]     ),
-       .uart_axi4_r_valid  (peribundle_axi4_r_valid[0]     ),
-       .uart_axi4_r_id     (peribundle_axi4_r_id[3:0]      ),
-       .uart_axi4_r_data   (peribundle_axi4_r_data[63:0]   ),
-       .uart_axi4_r_resp   (peribundle_axi4_r_resp[1:0]    ),
-       .uart_axi4_r_last   (peribundle_axi4_r_last[0]      ),
+    axi_uart #(
+        .MM_DWIDTH (64 ),
+        .AWIDTH    (31    )
+    ) u_axi_uart(
+        .clk           (clock           ),
+        .rst           (reset       ),
 
-       .clock(clock),
-       .resetn(resetn),
-       .uart_TX(uart_TX),
-       .uart_RX(uart_RX),
+        .s_axi_awready (peribundle_axi4_aw_ready[0]    ),
+        .s_axi_awvalid (peribundle_axi4_aw_valid[0]    ),
+        .s_axi_awid    (peribundle_axi4_aw_id[3:0]     ),
+        .s_axi_awaddr  (peribundle_axi4_aw_addr[30:0]  ),
+        .s_axi_awlen   (peribundle_axi4_aw_len[7:0]    ),
+        .s_axi_awsize  (peribundle_axi4_aw_size[2:0]   ),
+        .s_axi_awburst (peribundle_axi4_aw_burst[1:0]  ),
+        .s_axi_wready  (peribundle_axi4_w_ready[0]     ),
+        .s_axi_wvalid  (peribundle_axi4_w_valid[0]     ),
+        .s_axi_wdata   (peribundle_axi4_w_data[63:0]   ),
+        .s_axi_wstrb   (8'b1    ),
+        .s_axi_wlast   (1'b1      ),
+        .s_axi_bready  (peribundle_axi4_b_ready[0]     ),
+        .s_axi_bvalid  (peribundle_axi4_b_valid[0]     ),
+        .s_axi_bid     (peribundle_axi4_b_id[3:0]      ),
+        .s_axi_bresp   (peribundle_axi4_b_resp[1:0]    ),
+        .s_axi_arready (peribundle_axi4_ar_ready[0]    ),
+        .s_axi_arvalid (peribundle_axi4_ar_valid[0]    ),
+        .s_axi_arid    (peribundle_axi4_ar_id[3:0]     ),
+        .s_axi_araddr  (peribundle_axi4_ar_addr[30:0]  ),
+        .s_axi_arlen   (peribundle_axi4_ar_len[7:0]    ),
+        .s_axi_arsize  (peribundle_axi4_ar_size[2:0]   ),
+        .s_axi_arburst (peribundle_axi4_ar_burst[1:0]  ),
+        .s_axi_rready  (peribundle_axi4_r_ready[0]     ),
+        .s_axi_rvalid  (peribundle_axi4_r_valid[0]     ),
+        .s_axi_rid     (peribundle_axi4_r_id[3:0]      ),
+        .s_axi_rdata   (peribundle_axi4_r_data[63:0]   ),
+        .s_axi_rresp   (peribundle_axi4_r_resp[1:0]    ),
+        .s_axi_rlast   (peribundle_axi4_r_last[0]      ),
 
-       .interrupt(interrupt_uart)
-
-       );
+        .uart_axis_tdata  (uart_axis_tdata  ),
+        .uart_axis_tvalid (uart_axis_tvalid ),
+        .uart_axis_tready (uart_axis_tready )
+    );
 
    //0x60010000 - 0x6001ffff , 64kB
    axi_ram #(
@@ -194,7 +196,7 @@
        .ID_WIDTH(4)
    ) u_axi_ram(
        .clk           (clock         ),
-       .rst           (~resetn       ),
+       .rst           (reset       ),
        .s_axi_awready (peribundle_axi4_aw_ready[1]    ),
        .s_axi_awvalid (peribundle_axi4_aw_valid[1]    ),
        .s_axi_awid    (peribundle_axi4_aw_id[7:4]     ),
@@ -231,41 +233,4 @@
        .s_axi_rresp   (peribundle_axi4_r_resp[3:2]    ),
        .s_axi_rlast   (peribundle_axi4_r_last[1]      )
    );
-
-/*
-   bram bram_inst(
-       .bram_axi4_aw_ready (peribundle_axi4_aw_ready[1]    ),
-       .bram_axi4_aw_valid (peribundle_axi4_aw_valid[1]    ),
-       .bram_axi4_aw_id    (peribundle_axi4_aw_id[7:4]     ),
-       .bram_axi4_aw_addr  (peribundle_axi4_aw_addr[61:31] ),
-       .bram_axi4_aw_len   (peribundle_axi4_aw_len[15:8]   ),
-       .bram_axi4_aw_size  (peribundle_axi4_aw_size[5:3]   ),
-       .bram_axi4_aw_burst (peribundle_axi4_aw_burst[3:2]  ),
-       .bram_axi4_w_ready  (peribundle_axi4_w_ready[1]     ),
-       .bram_axi4_w_valid  (peribundle_axi4_w_valid[1]     ),
-       .bram_axi4_w_data   (peribundle_axi4_w_data[127:64] ),
-       .bram_axi4_w_strb   (peribundle_axi4_w_strb[15:8]   ),
-       .bram_axi4_w_last   (peribundle_axi4_w_last[1]      ),
-       .bram_axi4_b_ready  (peribundle_axi4_b_ready[1]     ),
-       .bram_axi4_b_valid  (peribundle_axi4_b_valid[1]     ),
-       .bram_axi4_b_id     (peribundle_axi4_b_id[7:4]      ),
-       .bram_axi4_b_resp   (peribundle_axi4_b_resp[3:2]    ),
-       .bram_axi4_ar_ready (peribundle_axi4_ar_ready[1]    ),
-       .bram_axi4_ar_valid (peribundle_axi4_ar_valid[1]    ),
-       .bram_axi4_ar_id    (peribundle_axi4_ar_id[7:4]     ),
-       .bram_axi4_ar_addr  (peribundle_axi4_ar_addr[61:31] ),
-       .bram_axi4_ar_len   (peribundle_axi4_ar_len[15:8]   ),
-       .bram_axi4_ar_size  (peribundle_axi4_ar_size[5:3]   ),
-       .bram_axi4_ar_burst (peribundle_axi4_ar_burst[3:2]  ),
-       .bram_axi4_r_ready  (peribundle_axi4_r_ready[1]     ),
-       .bram_axi4_r_valid  (peribundle_axi4_r_valid[1]     ),
-       .bram_axi4_r_id     (peribundle_axi4_r_id[7:4]      ),
-       .bram_axi4_r_data   (peribundle_axi4_r_data[127:64] ),
-       .bram_axi4_r_resp   (peribundle_axi4_r_resp[3:2]    ),
-       .bram_axi4_r_last   (peribundle_axi4_r_last[1]      ),
-       .clock(clock),
-       .resetn(resetn)
-       );
-       */
-
 endmodule

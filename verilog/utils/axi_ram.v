@@ -132,7 +132,7 @@ reg s_axi_rvalid_pipe_reg = 1'b0;
 // (* RAM_STYLE="BLOCK" *)
 reg [DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
 
-parameter BRAM_INIT_FILE = "firmware.hex";
+parameter BRAM_INIT_FILE = "/home/cutiesu/git_repo/fpga/riscv/clark_fpga/firmware/firmware.hex";
 initial begin
     $readmemh(BRAM_INIT_FILE, mem);
 end
